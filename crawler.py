@@ -1,11 +1,13 @@
-from common import MAX_ITERATION_CNT, LinkQueue, Scraper
+from common import MAX_ITERATION_CNT, LinkQueue, Scraper, MAX_PAGES_CRAWL
 
 def crawl(initial_url, link_queue: LinkQueue):
     scraper = Scraper()
     link_queue.add(initial_url)
 
     iteration_cnt = 0
-    while link_queue.size() != 0 and iteration_cnt < MAX_ITERATION_CNT and link_queue.size() < 300:
+    while (link_queue.size() != 0 
+            and iteration_cnt < MAX_ITERATION_CNT
+            and link_queue.size() < MAX_PAGES_CRAWL):
         url = link_queue.pop()
         # This will print word count of ray from the page.
         new_links = scraper.parse(url)
