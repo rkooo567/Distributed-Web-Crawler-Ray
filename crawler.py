@@ -1,34 +1,4 @@
-import ray
-
-import requests
-import time
-from bs4 import BeautifulSoup
-from typing import List
-from crawler_distributed import run_distributed_crawler, MAX_ITERATION_CNT, Scraper
-
-# pip install requests==2.22.0 beautifulsoup4==4.8.1 ray==0.8.4
-class LinkQueue:
-    def __init__(self):
-        self.queue = []
-        self.visited = set()
-
-    def add(self, link):
-        if not self._is_visited(link):
-            self.queue.append(link)
-            self.visited.add(link)
-
-    def pop(self):
-        """
-        Pop the first link in the queue.
-        """
-        return self.queue.pop(0)
-    
-    def size(self):
-        return len(self.queue)
-
-    def _is_visited(self, link):
-        return link in self.visited
-
+from common import MAX_ITERATION_CNT, LinkQueue, Scraper
 
 def crawl(initial_url, link_queue: LinkQueue):
     scraper = Scraper()
@@ -58,27 +28,3 @@ def run_non_distributed_crawler():
     crawl(third_url, link_queue)
     return len(link_queue.visited)
 
-
-if __name__ == '__main__':
-    ray.init()
-    assert ray.is_initialized()
-
-    start = time.time()
-    visited_not_distributed = run_non_distributed_crawler()
-    end = time.time()
-    print(f"non distributed crawler takes {end - start}")
-    
-    start = time.time()
-    visited_distributed = run_distributed_crawler()
-    end = time.time()
-    print(f"distributed crawler takes {end - start}")
-
-    # Make sure they return the same result.
-    print(f"non distributed crawler crawled {visited_not_distributed} entries")
-    print(f"distributed crawler crawled {visited_distributed} entries")
-
-
-# What should we do with this?
-# What features do we need to support?
-#  - crawling
-#  - interface to scrape
