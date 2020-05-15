@@ -4,9 +4,9 @@ from bs4 import BeautifulSoup
 from typing import List
 from urllib.parse import urlparse
 
-MAX_ITERATION_CNT = 1
-MAX_REVISIT = 10
-MAX_PAGES_CRAWL = 300
+MAX_ITERATION_CNT = 10
+MAX_REVISIT = 100
+MAX_PAGES_CRAWL = 100000
 
 
 class Throttler:
