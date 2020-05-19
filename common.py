@@ -4,8 +4,8 @@ from bs4 import BeautifulSoup
 from typing import List
 from urllib.parse import urlparse
 
-MAX_ITERATION_CNT = 10
-MAX_REVISIT = 100
+MAX_ITERATION_CNT = 100
+MAX_REVISIT = 500
 MAX_PAGES_CRAWL = 100000
 
 
@@ -21,25 +21,35 @@ class Throttler:
     def is_throttled(self, url):
         site = self._get_hostname(url)
         return self.history[site] >= self.max_visit
-    
+
     def _get_hostname(self, url):
         return urlparse(url).hostname
 
 
 class Scraper:
+
+    def __init__(self):
+        self.exception_ctn = 0
+
     def parse(self, url) -> List[str]:
         """
         - parse HTML
         - print word count of ray
         - return links from the page.
         """
-        html_text = requests.get(url).text
-        soup = BeautifulSoup(html_text, 'html.parser')
-        new_links = []
-        for link_tag in soup.find_all('a'):
-            new_link = self._get_url(link_tag.get('href'), url)
-            if new_link is not None:
-                new_links.append(new_link)
+        try:
+            html_text = requests.get(url, timeout=0.3).text
+            soup = BeautifulSoup(html_text, 'html.parser')
+            new_links = []
+            for link_tag in soup.find_all('a'):
+                new_link = self._get_url(link_tag.get('href'), url)
+                if new_link is not None:
+                    new_links.append(new_link)
+        except Exception as e:
+            print(e)
+            self.exception_ctn += 1
+            return []
+
         return new_links
 
     def _get_url(self, path, root_url) -> str:
@@ -50,7 +60,7 @@ class Scraper:
         path = url_info.path
         scheme = url_info.scheme
         # We don't care protocols other than http/https
-        if (scheme != "http" 
+        if (scheme != "http"
                 and scheme != "https"):
             return None
 
@@ -69,7 +79,7 @@ class LinkQueue:
 
     def add(self, link):
         if self.throttler.is_throttled(link):
-            return 
+            return
 
         if not link in self.visited:
             self.queue.append(link)

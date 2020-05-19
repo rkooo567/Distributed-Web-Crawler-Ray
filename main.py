@@ -7,13 +7,14 @@ from crawler import run_non_distributed_crawler
 # pip install requests==2.22.0 beautifulsoup4==4.8.1 ray==0.8.4
 
 if __name__ == '__main__':
-    ray.init(webui_host="0.0.0.0")
+    address = ray.init(address='auto', webui_host="0.0.0.0")
+    print(address["webui_url"])
     assert ray.is_initialized()
 
-    # start = time.time()
-    # visited_not_distributed = run_non_distributed_crawler()
-    # end = time.time()
-    # print(f"non distributed crawler takes {end - start}")
+    #start = time.time()
+    #visited_not_distributed = run_non_distributed_crawler()
+    #end = time.time()
+    #print(f"non distributed crawler takes {end - start}")
     
     start = time.time()
     visited_distributed = run_distributed_crawler()
@@ -21,7 +22,7 @@ if __name__ == '__main__':
     print(f"distributed crawler takes {end - start}")
 
     # Make sure they return the same result.
-    # print(f"non distributed crawler crawled {visited_not_distributed} entries")
+    #print(f"non distributed crawler crawled {visited_not_distributed} entries")
     print(f"distributed crawler crawled {visited_distributed} entries")
 
     time.sleep(100)
