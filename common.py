@@ -4,9 +4,8 @@ from bs4 import BeautifulSoup
 from typing import List
 from urllib.parse import urlparse
 
-MAX_ITERATION_CNT = 100
 MAX_REVISIT = 500
-MAX_PAGES_CRAWL = 100000
+MAX_PAGES_CRAWL = 500
 
 
 class Throttler:
@@ -37,8 +36,11 @@ class Scraper:
         - print word count of ray
         - return links from the page.
         """
+        if not url:
+            return []
+
         try:
-            html_text = requests.get(url, timeout=0.3).text
+            html_text = requests.get(url, timeout=0.7).text
             soup = BeautifulSoup(html_text, 'html.parser')
             new_links = []
             for link_tag in soup.find_all('a'):
@@ -64,10 +66,8 @@ class Scraper:
                 and scheme != "https"):
             return None
 
-        if scheme == "":
-            scheme = "https"
-        if host == "":
-            host = root_url
+        if scheme == "": scheme = "https"
+        if host == "": host = root_url
         return f"{scheme}://{host}{path}"
 
 
@@ -90,6 +90,9 @@ class LinkQueue:
         """
         Pop the first link in the queue.
         """
+        if self.size() == 0:
+            return None
+
         return self.queue.pop(0)
 
     def size(self):
