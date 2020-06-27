@@ -5,7 +5,7 @@ import ray
 from common import LinkQueue, Scraper, MAX_PAGES_CRAWL
 
 
-@ray.remote
+@ray.remote(num_cpus=1)
 def crawl(initial_url, link_queue):
     scraper = Scraper()
 
@@ -21,7 +21,6 @@ def crawl(initial_url, link_queue):
 
         iteration_cnt += 1
         visited = len(ray.get(link_queue.get_visited.remote()))
-        time.sleep(0.05)
 
 
 def run_distributed_crawler():

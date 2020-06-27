@@ -4,18 +4,26 @@ from bs4 import BeautifulSoup
 from typing import List
 from urllib.parse import urlparse
 
-MAX_REVISIT = 500
-MAX_PAGES_CRAWL = 500
+MAX_REVISIT = 10000
+MAX_PAGES_CRAWL = 8000
 
 
 class Throttler:
     def __init__(self, max_visit=MAX_REVISIT):
         self.history = defaultdict(int)
         self.max_visit = max_visit
+        # Do not scrape these websites
+        self.banned_hosts = ["scrapinghub", "goodreads"]
 
     def record(self, url):
         site = self._get_hostname(url)
         self.history[site] += 1
+
+    def is_banned(self, url):
+        for host in self.banned_hosts:
+            if host in url:
+                return True
+        return False
 
     def is_throttled(self, url):
         site = self._get_hostname(url)
@@ -26,7 +34,6 @@ class Throttler:
 
 
 class Scraper:
-
     def __init__(self):
         self.exception_ctn = 0
 
@@ -40,11 +47,11 @@ class Scraper:
             return []
 
         try:
-            html_text = requests.get(url, timeout=0.7).text
-            soup = BeautifulSoup(html_text, 'html.parser')
+            html_text = requests.get(url, timeout=0.4).text
+            soup = BeautifulSoup(html_text, "html.parser")
             new_links = []
-            for link_tag in soup.find_all('a'):
-                new_link = self._get_url(link_tag.get('href'), url)
+            for link_tag in soup.find_all("a"):
+                new_link = self._get_url(link_tag.get("href"), url)
                 if new_link is not None:
                     new_links.append(new_link)
         except Exception as e:
@@ -62,12 +69,11 @@ class Scraper:
         path = url_info.path
         scheme = url_info.scheme
         # We don't care protocols other than http/https
-        if (scheme != "http"
-                and scheme != "https"):
-            return None
+        if scheme != "http" and scheme != "https":
+            scheme = "http"
 
-        if scheme == "": scheme = "https"
-        if host == "": host = root_url
+        if host == "":
+            return f"{root_url}/{path}"
         return f"{scheme}://{host}{path}"
 
 
@@ -78,7 +84,7 @@ class LinkQueue:
         self.throttler = Throttler()
 
     def add(self, link):
-        if self.throttler.is_throttled(link):
+        if self.throttler.is_throttled(link) or self.throttler.is_banned(link):
             return
 
         if not link in self.visited:
