@@ -9,17 +9,14 @@ from common import LinkQueue, Scraper, MAX_PAGES_CRAWL
 def crawl(initial_url, link_queue):
     scraper = Scraper()
 
-    iteration_cnt = 0
     visited = len(ray.get(link_queue.get_visited.remote()))
 
     while visited < MAX_PAGES_CRAWL:
         url = ray.get(link_queue.pop.remote())
-        # This will print word count of ray from the page.
         new_links = scraper.parse(url)
         for new_link in new_links:
             link_queue.add.remote(new_link)
 
-        iteration_cnt += 1
         visited = len(ray.get(link_queue.get_visited.remote()))
 
 

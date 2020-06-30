@@ -38,11 +38,6 @@ class Scraper:
         self.exception_ctn = 0
 
     def parse(self, url) -> List[str]:
-        """
-        - parse HTML
-        - print word count of ray
-        - return links from the page.
-        """
         if not url:
             return []
 
