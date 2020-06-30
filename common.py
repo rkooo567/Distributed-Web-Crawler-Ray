@@ -5,7 +5,7 @@ from typing import List
 from urllib.parse import urlparse
 
 MAX_REVISIT = 10000
-MAX_PAGES_CRAWL = 8000
+MAX_PAGES_CRAWL = 300
 
 
 class Throttler:

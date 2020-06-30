@@ -1,7 +1,5 @@
-import os
-import time
-
 import ray
+
 from common import LinkQueue, Scraper, MAX_PAGES_CRAWL
 
 
