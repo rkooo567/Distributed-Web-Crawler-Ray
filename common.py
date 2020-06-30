@@ -47,7 +47,7 @@ class Scraper:
             return []
 
         try:
-            html_text = requests.get(url, timeout=0.4).text
+            html_text = requests.get(url, timeout=0.5).text
             soup = BeautifulSoup(html_text, "html.parser")
             new_links = []
             for link_tag in soup.find_all("a"):
