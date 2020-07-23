@@ -4,8 +4,9 @@ from bs4 import BeautifulSoup
 from typing import List
 from urllib.parse import urlparse
 
-MAX_REVISIT = 10000
-MAX_PAGES_CRAWL = 300
+MAX_REVISIT = 30000
+MAX_PAGES_CRAWL = 5000
+BATCH_SIZE = 10
 
 
 class Throttler:
@@ -13,7 +14,7 @@ class Throttler:
         self.history = defaultdict(int)
         self.max_visit = max_visit
         # Do not scrape these websites
-        self.banned_hosts = ["scrapinghub", "goodreads"]
+        self.banned_hosts = ["scrapinghub", "goodreads", "wikimedia"]
 
     def record(self, url):
         site = self._get_hostname(url)
@@ -23,6 +24,10 @@ class Throttler:
         for host in self.banned_hosts:
             if host in url:
                 return True
+
+        if "44.233.155.0" not in url:
+            return True
+
         return False
 
     def is_throttled(self, url):
@@ -42,7 +47,7 @@ class Scraper:
             return []
 
         try:
-            html_text = requests.get(url, timeout=0.5).text
+            html_text = requests.get(url, timeout=0.7).text
             soup = BeautifulSoup(html_text, "html.parser")
             new_links = []
             for link_tag in soup.find_all("a"):
@@ -78,23 +83,30 @@ class LinkQueue:
         self.visited = set()
         self.throttler = Throttler()
 
-    def add(self, link):
-        if self.throttler.is_throttled(link) or self.throttler.is_banned(link):
-            return
+    def add_batch(self, links):
+        for link in links:
+            if self.throttler.is_throttled(link) or self.throttler.is_banned(link):
+                return
 
-        if not link in self.visited:
-            self.queue.append(link)
-            self.visited.add(link)
-            self.throttler.record(link)
+            if not link in self.visited:
+                self.queue.append(link)
+                self.visited.add(link)
+                self.throttler.record(link)
 
-    def pop(self):
+    def pop_batch(self):
         """
         Pop the first link in the queue.
         """
         if self.size() == 0:
-            return None
+            return []
 
-        return self.queue.pop(0)
+        if self.size() < BATCH_SIZE:
+            links = self.queue[:]
+            self.queue = []
+            return links
+        else:
+            links = [self.queue.pop(0) for _ in range(BATCH_SIZE)]
+            return links
 
     def size(self):
         return len(self.queue)

@@ -7,7 +7,7 @@ from crawler import run_non_distributed_crawler
 # pip install requests==2.22.0 beautifulsoup4==4.8.1 ray==0.8.4
 
 if __name__ == "__main__":
-    address = ray.init(address="auto", webui_host="0.0.0.0")
+    address = ray.init(webui_host="0.0.0.0", num_cpus=16)
     print(address["webui_url"])
     assert ray.is_initialized()
 
